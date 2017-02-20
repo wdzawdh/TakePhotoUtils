@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.cw.takephotoutils.weiget.SquareLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/platform_gallery_bg_select_ablum"
+    android:padding="20dp">
+
+    <RelativeLayout
+        android:layout_width="122dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+
+        <TextView
+            android:id="@+id/tv_name"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:layout_alignParentBottom="true"
+            android:gravity="center"
+            android:textColor="#30000000"/>
+
+        <ImageView
+            android:id="@+id/iv_image"
+            android:layout_width="122dp"
+            android:layout_height="122dp"
+            android:layout_above="@id/tv_name"
+            android:scaleType="centerCrop"/>
+
+        <TextView
+            android:id="@+id/tv_count"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:layout_alignBottom="@id/iv_image"
+            android:background="@drawable/platform_gallery_bg_select_count"
+            android:gravity="right|center_vertical"
+            android:textColor="@android:color/white"/>
+    </RelativeLayout>
+
+</com.cw.takephotoutils.weiget.SquareLayout>

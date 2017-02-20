@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">TakePhotoUtils</string>
+
+    <string name="from_act_gallery">从图库选择</string>
+    <string name="app_cream_photo">拍摄新的照片</string>
+    <string name="app_select_photo">从照片库选择</string>
+
+    <string name="platform_gallery_zhang">张</string>
+    <string name="platform_gallery_list">相册列表</string>
+    <string name="platform_gallery_detail_list">选择图片</string>
+    <string name="platform_gallery_photo_has_select">图片已经选过</string>
+    <string name="platform_grllery_more_select">最多只能选择</string>
+</resources>
