@@ -1,31 +1,171 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.cw.takephotoutils.MainActivity">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btn"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="gogo"/>
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btn_unbind"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="unbind"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:text="需求:1234为一组,abcd为一组,自己组的图片选择重复时提示用户不能选择,压缩过程中的图片不能让用户选择."/>
 
-    <ImageView
-        android:id="@+id/img"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/cream1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1"/>
+
+            <Button
+                android:id="@+id/cream2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="2"/>
+
+            <Button
+                android:id="@+id/cream3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="3"/>
+
+            <Button
+                android:id="@+id/cream4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="4"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/frame1"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_weight="1"/>
+
+            <ImageView
+                android:id="@+id/frame2"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_weight="1"/>
+
+            <ImageView
+                android:id="@+id/frame3"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_weight="1"/>
+
+            <ImageView
+                android:id="@+id/frame4"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/cream_a"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="A"/>
+
+            <Button
+                android:id="@+id/cream_b"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="B"/>
+
+            <Button
+                android:id="@+id/cream_c"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="C"/>
+
+            <Button
+                android:id="@+id/cream_d"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="D"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/frame_a"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_weight="1"/>
+
+            <ImageView
+                android:id="@+id/frame_b"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_weight="1"/>
+
+            <ImageView
+                android:id="@+id/frame_c"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_weight="1"/>
+
+            <ImageView
+                android:id="@+id/frame_d"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:text="需求:裁剪图片并压缩"/>
+
+        <Button
+            android:id="@+id/bt_crop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="裁剪图片"/>
+
+        <ImageView
+            android:id="@+id/frame_crop"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"/>
+    </LinearLayout>
+</ScrollView>

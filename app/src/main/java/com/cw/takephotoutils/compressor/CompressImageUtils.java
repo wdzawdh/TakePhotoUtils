@@ -40,7 +40,7 @@ import static android.content.Context.BIND_AUTO_CREATE;
  */
 public class CompressImageUtils {
 
-    public static String COMPRESS_SERVICE_ACTION = "com.cw.takephotoutils.compressor.ICompressService";
+    private static String COMPRESS_SERVICE_ACTION = "com.paic.yl.health.utils.compressor.ICompressService";
 
     private static boolean sHasBind;
     private Handler UIHandle = new Handler(Looper.getMainLooper());
@@ -60,7 +60,7 @@ public class CompressImageUtils {
     };
 
     public CompressImageUtils() {
-        //初始化压缩工具
+        //初始化默认压缩配置
         mConfig = new CompressConfig();
         mConfig.setMaxSize(700);
         mConfig.setMaxPixel(1280);
@@ -90,7 +90,6 @@ public class CompressImageUtils {
         if (listener == null || mConfig == null) {
             throw new RuntimeException("CompressConfig or CompressImageListener can not be null");
         }
-
         if (mConfig.isOpenProcess() && mService != null && isServiceRunning(CompressorService.class)) {
             try {
                 mService.compress(basePath, compressPath, mConfig.getMaxSize(), mConfig.getMaxPixel(), new ICompressCallback.Stub() {
@@ -100,7 +99,7 @@ public class CompressImageUtils {
                             @Override
                             public void run() {
                                 if (!TextUtils.isEmpty(compress)) {
-                                    Log.d("CompressorService", "onCallBack" + compress);
+                                    Log.d("CompressorService", "ServiceCallBack" + compress);
                                     listener.onCompressSuccess(basePath, compress);
                                 } else {
                                     listener.onCompressFailed(basePath);
@@ -114,7 +113,7 @@ public class CompressImageUtils {
                 e.printStackTrace();
             }
         }
-
+        //如果压缩服务不在运行就开线程进行压缩
         ThreadPoolManager.getThreadProxyPool(1, 1, 0L).excute(new Runnable() {
             @Override
             public void run() {
@@ -123,7 +122,7 @@ public class CompressImageUtils {
                     @Override
                     public void run() {
                         if (!TextUtils.isEmpty(path)) {
-                            Log.d("NoCompressorService", "onCallBack" + path);
+                            Log.d("CompressorService", "ThreadCallBack" + path);
                             listener.onCompressSuccess(basePath, path);
                         } else {
                             listener.onCompressFailed(basePath);
@@ -145,7 +144,7 @@ public class CompressImageUtils {
     }
 
     private void bindCompressService() {
-        if (!sHasBind) {
+        if (!sHasBind && mServiceConnection != null) {
             Intent intent = new Intent(BaseApplication.sAppContext, CompressorService.class);
             intent.setAction(COMPRESS_SERVICE_ACTION);
             intent.setPackage(CompressorService.class.getPackage().getName());
@@ -155,7 +154,7 @@ public class CompressImageUtils {
     }
 
     private void unBindCompressService() {
-        if (sHasBind) {
+        if (sHasBind && mServiceConnection != null) {
             BaseApplication.sAppContext.unbindService(mServiceConnection);
             sHasBind = false;
         }
@@ -177,7 +176,6 @@ public class CompressImageUtils {
             bitmap = getSmallBitmap(basePath, maxPixel);
             baos = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
-            Log.d("GetPhotoUtils", basePath + "图片初始大小" + baos.toByteArray().length / 1024 + "k");
             while (baos.toByteArray().length > maxSize * 1024) {
                 //每超出200k质量减1
                 int i = (baos.toByteArray().length / 1024 - maxSize) / 200;
@@ -185,7 +183,6 @@ public class CompressImageUtils {
                 baos.reset();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
             }
-            Log.d("GetPhotoUtils", basePath + "图片压缩完成" + baos.toByteArray().length / 1024 + "k");
             FileOutputStream out = new FileOutputStream(compressPath);
             baos.writeTo(out);
         } catch (OutOfMemoryError oom) {

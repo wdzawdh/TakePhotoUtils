@@ -90,5 +90,24 @@ public class ThreadPoolManager {
                 }
             }
         }
+
+        /**
+         * 启动一次顺序关闭，执行以前提交的任务，但不接受新任务。
+         */
+        public void shutdown() {
+            if (threadPoolExecutor != null) {
+                threadPoolExecutor.shutdown();
+            }
+        }
+
+        /**
+         * 如果shutdown后所有任务都已完成，则返回 true。
+         */
+        public boolean isTerminated() {
+            if (threadPoolExecutor != null) {
+                return threadPoolExecutor.isTerminated();
+            }
+            return true;
+        }
     }
 }

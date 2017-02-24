@@ -14,6 +14,7 @@ package com.cw.takephotoutils.utils;
 import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.cw.takephotoutils.R;
 import com.cw.takephotoutils.weiget.OptionDialog;
@@ -46,14 +47,7 @@ public class GetPhotoUtils {
     }
 
     /**
-     * 企业活动使用(特殊)
-     */
-    public interface ShowSpecialOptsListener {
-        void showSpecialGallery();
-    }
-
-    /**
-     * 获取图片监听,请在onActivityResult中使用,将requestCode,resultCode,intent传入
+     * 获取图片监听
      */
     public void setOnGetPhotoListener(@NonNull OnGetPhotoListener listener) {
         this.listener = listener;
@@ -138,6 +132,10 @@ public class GetPhotoUtils {
             , final int maxPickCount, final int maxSize, final String itemKey
             , final ArrayList<String> haveSelectedPaths, final Class gotoCameraAct) {
 
+        if (mTakePhotoUtils == null) {
+            Log.d("GetPhotoUtils", "TakePhotoUtils is null");
+            return;
+        }
         mTakePhotoUtils.setMaxSize(maxSize);
         mTakePhotoUtils.setNeedCompress(needCompress);
         mTakePhotoUtils.setNeedCrop(needCrop);
@@ -174,41 +172,8 @@ public class GetPhotoUtils {
     }
 
     /**
-     * for 企业活动 特殊
-     *
-     * @param position     图片索引
-     * @param maxPickCount 最大选择张数
-     * @param maxSize      压缩后图片最大尺寸(k)
+     * 请在onActivityResult中使用,将requestCode,resultCode,intent传入
      */
-    public void showActDialog(final Activity act, final int position, final int maxPickCount, final int maxSize, final ShowSpecialOptsListener showListener) {
-        OptionDialog optionDialog = new OptionDialog(act);
-        optionDialog.setOptionArray(R.string.from_act_gallery, R.string.app_cream_photo, R.string.app_select_photo);
-        optionDialog.setOnSelectListener(new OptionDialog.OnSelectListener() {
-            @Override
-            public void OnSelect(int i, String value) {
-                mTakePhotoUtils.setMaxSize(maxSize);
-                switch (i) {
-                    case 0:
-                        if (showListener != null) {
-                            showListener.showSpecialGallery();
-                        }
-                        break;
-                    case 1:
-                        mTakePhotoUtils.takeCameraBySystem(act);
-                        break;
-                    case 2:
-                        mTakePhotoUtils.pickPhotoByCustom(act, maxPickCount, null);
-                        break;
-                    case -1:
-                        if (listener != null) {
-                            listener.onCancel(position);
-                        }
-                        break;
-                }
-            }
-        });
-    }
-
     public void onActivityResult(Activity act, int requestCode, int resultCode, Intent data) {
         if (listener == null) {
             throw new RuntimeException("OnGetPhotoListener can not be null");

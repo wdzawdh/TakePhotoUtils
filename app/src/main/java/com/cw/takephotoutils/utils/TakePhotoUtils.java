@@ -22,12 +22,13 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.cw.takephotoutils.BaseApplication;
+import com.cw.takephotoutils.MyEnter;
 import com.cw.takephotoutils.MyExtra;
 import com.cw.takephotoutils.compressor.CompressImageUtils;
-import com.cw.takephotoutils.gallery.GalleryActivity;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,11 +48,11 @@ public class TakePhotoUtils {
     private static final int RESULT_CAMERA_CROP_RESULT = 301;//裁剪并保存完照片的结果码
 
     //总文件夹路径
-    private static String sDir = Environment.getExternalStorageDirectory().getPath() + "/getPhotoUtils/temp/";
+    private static String sDir = Environment.getExternalStorageDirectory().getPath() + "/takePhotoUtils/img/";
     //文件夹路径
-    private String mPath;
+    private String mPath = sDir + System.currentTimeMillis() + "/";
     //Tag图片标识
-    private String mTag;
+    private String mTag = "";
     //图片位置
     private int mPosition;
     //是否要压缩
@@ -71,11 +72,7 @@ public class TakePhotoUtils {
     private CompressImageUtils mCompressImageUtils;
 
     public TakePhotoUtils() {
-        mPath = sDir + System.currentTimeMillis() + "/";
-        File parentFile = new File(mPath);
-        if (!parentFile.exists()) {
-            parentFile.mkdirs();
-        }
+        FileUtils.makeDirs(mPath);
         mCompressImageUtils = new CompressImageUtils();
     }
 
@@ -86,13 +83,8 @@ public class TakePhotoUtils {
         }
     }
 
-    public String getPath() {
-        return mPath;
-    }
-
     public void setMaxSize(int maxSize) {
         if (mCompressImageUtils != null) {
-
             mCompressImageUtils.setMaxSize(maxSize);
         }
     }
@@ -179,12 +171,8 @@ public class TakePhotoUtils {
             return;
         }
         mIsSystemGallery = false;
-        Intent i = new Intent(act, GalleryActivity.class);
-        i.putExtra(MyExtra.KEY_GALLERY_MAX_SIZE, maxCount);
-        i.putExtra(MyExtra.KEY_GALLERY_MIME_TYPE, "image/jpeg");
         String[] haveSelectedBasePath = getHaveSelectedBasePath(haveSelectedPaths);
-        i.putExtra(MyExtra.KEY_GALLERY_HAS_SELECTED, haveSelectedBasePath);
-        act.startActivityForResult(i, GalleryActivity.RESULT_PICK_IMAGE);
+        MyEnter.openGallery(act, maxCount, haveSelectedBasePath, "image/jpeg");
     }
 
     /**
@@ -224,38 +212,49 @@ public class TakePhotoUtils {
             listener.onCancel(mPosition);
             return;
         }
+        if (!FileUtils.makeDirs(mPath)) {
+            Log.i("TakePhotoUtils", mPath + "img dir don't find");
+            return;
+        }
+        if (mCompressImageUtils == null) {
+            Log.i("TakePhotoUtils", "CompressImageUtils is null");
+            return;
+        }
         switch (requestCode) {
             case TakePhotoUtils.RESULT_CAMERA_ONLY: {
                 String[] cameraPhotoPath = getCameraPhotoPath(data, mIsSystemCamera);
-                if (mNeedCrop) {
+                if (mNeedCrop && cameraPhotoPath.length > 0) {
                     cropImage(act, cameraPhotoPath[0], refreshCropFileName());
                     return;
                 }
+                //情况一:不需要裁剪,需要压缩(拍照)
                 if (mNeedCompress) {
                     String[] compressPaths = refreshCompressFileName(cameraPhotoPath.length, mTag);
                     for (int i = 0; i < compressPaths.length; i++) {
+                        final String tag = mTag;
                         final int index = i;
                         final int pickIndex = mPosition + i;
-                        final String basePath = cameraPhotoPath[i];
+                        String basePath = cameraPhotoPath[i];
                         String compressPath = compressPaths[i];
-                        tableManagerAddMap(mTag, basePath, compressPath, StateModel.STATE_COMPRESSING);
-                        listener.onStart(basePath, index, pickIndex, mTag);
+                        tableManagerAddMap(tag, basePath, compressPath, StateModel.STATE_COMPRESSING);
+                        listener.onStart(basePath, index, pickIndex, tag);
                         mCompressImageUtils.compress(basePath, compressPath, new CompressImageUtils.CompressImageListener() {
                             @Override
                             public void onCompressSuccess(String basePath, String compressPath) {
-                                tableManagerModifyState(mTag, basePath, compressPath, StateModel.STATE_FINISH);
-                                listener.onNext(basePath, "", compressPath, index, pickIndex, mTag);
+                                tableManagerModifyState(tag, basePath, compressPath, StateModel.STATE_FINISH);
+                                listener.onNext(basePath, "", compressPath, index, pickIndex, tag);
                             }
 
                             @Override
                             public void onCompressFailed(String basePath) {
-                                tableManagerModifyState(mTag, basePath, "", StateModel.STATE_FINISH);
-                                listener.onFailed(basePath, index, pickIndex, mTag);
+                                tableManagerModifyState(tag, basePath, "", StateModel.STATE_FINISH);
+                                listener.onFailed(basePath, index, pickIndex, tag);
                             }
                         });
                     }
                     return;
                 }
+                //情况二:不需要裁剪,不需要压缩(拍照)
                 for (int i = 0; i < cameraPhotoPath.length; i++) {
                     int pickIndex = mPosition + i;
                     listener.onStart(cameraPhotoPath[i], i, pickIndex, mTag);
@@ -265,35 +264,38 @@ public class TakePhotoUtils {
             }
             case TakePhotoUtils.RESULT_PICK_IMAGE: {
                 String[] pickPhotoPath = getPickPhotoPath(BaseApplication.sAppContext, data, mIsSystemGallery);
-                if (mNeedCrop) {
+                if (mNeedCrop && pickPhotoPath.length > 0) {
                     cropImage(act, pickPhotoPath[0], refreshCropFileName());
                     return;
                 }
+                //情况一:不需要裁剪,需要压缩(图库)
                 if (mNeedCompress) {
                     String[] compressPaths = refreshCompressFileName(pickPhotoPath.length, mTag);
                     for (int i = 0; i < compressPaths.length; i++) {
+                        final String tag = mTag;
                         final int index = i;
                         final int pickIndex = mPosition + i;
                         final String basePath = pickPhotoPath[i];
                         String compressPath = compressPaths[i];
-                        tableManagerAddMap(mTag, basePath, compressPath, StateModel.STATE_COMPRESSING);
-                        listener.onStart(basePath, index, pickIndex, mTag);
+                        tableManagerAddMap(tag, basePath, compressPath, StateModel.STATE_COMPRESSING);
+                        listener.onStart(basePath, index, pickIndex, tag);
                         mCompressImageUtils.compress(basePath, compressPath, new CompressImageUtils.CompressImageListener() {
                             @Override
                             public void onCompressSuccess(String basePath, String compressPath) {
-                                tableManagerModifyState(mTag, basePath, compressPath, StateModel.STATE_FINISH);
-                                listener.onNext(basePath, "", compressPath, index, pickIndex, mTag);
+                                tableManagerModifyState(tag, basePath, compressPath, StateModel.STATE_FINISH);
+                                listener.onNext(basePath, "", compressPath, index, pickIndex, tag);
                             }
 
                             @Override
                             public void onCompressFailed(String basePath) {
-                                tableManagerModifyState(mTag, basePath, "", StateModel.STATE_FINISH);
-                                listener.onFailed(basePath, index, pickIndex, mTag);
+                                tableManagerModifyState(tag, basePath, "", StateModel.STATE_FINISH);
+                                listener.onFailed(basePath, index, pickIndex, tag);
                             }
                         });
                     }
                     return;
                 }
+                //情况二:不需要裁剪,不需要压缩(图库)
                 for (int i = 0; i < pickPhotoPath.length; i++) {
                     int pickIndex = mPosition + i;
                     listener.onStart(pickPhotoPath[i], i, pickIndex, mTag);
@@ -303,25 +305,28 @@ public class TakePhotoUtils {
             }
             case TakePhotoUtils.RESULT_CAMERA_CROP_RESULT: {
                 String[] cropPaths = refreshCompressFileName(1, mTag);
+                //情况三:需要裁剪,需要压缩
                 if (mNeedCompress) {
+                    final String tag = mTag;
                     String compressPath = cropPaths[0];
-                    tableManagerAddMap(mTag, mCropPath, compressPath, StateModel.STATE_COMPRESSING);
-                    listener.onStart(mCropPath, 0, mPosition, mTag);
+                    tableManagerAddMap(tag, mCropPath, compressPath, StateModel.STATE_COMPRESSING);
+                    listener.onStart(mCropPath, 0, mPosition, tag);
                     mCompressImageUtils.compress(mCropPath, compressPath, new CompressImageUtils.CompressImageListener() {
                         @Override
                         public void onCompressSuccess(String basePath, String compressPath) {
-                            tableManagerModifyState(mTag, basePath, compressPath, StateModel.STATE_FINISH);
-                            listener.onNext(mCropBasePath, mCropPath, compressPath, 0, mPosition, mTag);
+                            tableManagerModifyState(tag, basePath, compressPath, StateModel.STATE_FINISH);
+                            listener.onNext(mCropBasePath, mCropPath, compressPath, 0, mPosition, tag);
                         }
 
                         @Override
                         public void onCompressFailed(String basePath) {
-                            tableManagerModifyState(mTag, basePath, "", StateModel.STATE_FINISH);
-                            listener.onFailed(basePath, 0, mPosition, mTag);
+                            tableManagerModifyState(tag, basePath, "", StateModel.STATE_FINISH);
+                            listener.onFailed(basePath, 0, mPosition, tag);
                         }
                     });
                     return;
                 }
+                //情况四:需要裁剪,不需要压缩
                 listener.onStart(mCropPath, 0, mPosition, mTag);
                 listener.onNext(mCropBasePath, mCropPath, mCropPath, 0, mPosition, mTag);
             }
