@@ -87,8 +87,11 @@ public class CompressImageUtils {
     }
 
     public void compress(final String basePath, final String compressPath, final CompressImageListener listener) {
-        if (listener == null || mConfig == null) {
-            throw new RuntimeException("CompressConfig or CompressImageListener can not be null");
+        if (listener == null) {
+            throw new IllegalArgumentException("CompressImageListener can not be null");
+        }
+        if (mConfig == null) {
+            throw new IllegalArgumentException("CompressConfig can not be null");
         }
         if (mConfig.isOpenProcess() && mService != null && isServiceRunning(CompressorService.class)) {
             try {

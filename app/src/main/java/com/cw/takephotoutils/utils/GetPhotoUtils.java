@@ -176,7 +176,7 @@ public class GetPhotoUtils {
      */
     public void onActivityResult(Activity act, int requestCode, int resultCode, Intent data) {
         if (listener == null) {
-            throw new RuntimeException("OnGetPhotoListener can not be null");
+            throw new IllegalArgumentException("OnGetPhotoListener can not be null");
         }
         mTakePhotoUtils.onActivityResult(act, requestCode, resultCode, data, new TakePhotoUtils.OnTakePhotoListener() {
             @Override

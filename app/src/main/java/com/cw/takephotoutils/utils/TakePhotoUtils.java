@@ -206,7 +206,7 @@ public class TakePhotoUtils {
      */
     public void onActivityResult(Activity act, int requestCode, int resultCode, Intent data, final OnTakePhotoListener listener) {
         if (listener == null) {
-            throw new RuntimeException("OnTakePhotoListener can not be null");
+            throw new IllegalArgumentException("OnTakePhotoListener can not be null");
         }
         if (resultCode != Activity.RESULT_OK) {
             listener.onCancel(mPosition);
@@ -308,20 +308,23 @@ public class TakePhotoUtils {
                 //情况三:需要裁剪,需要压缩
                 if (mNeedCompress) {
                     final String tag = mTag;
+                    final String cropBasePath = mCropBasePath;
+                    final int position = mPosition;
+                    String cropPath = mCropPath;
                     String compressPath = cropPaths[0];
-                    tableManagerAddMap(tag, mCropPath, compressPath, StateModel.STATE_COMPRESSING);
-                    listener.onStart(mCropPath, 0, mPosition, tag);
-                    mCompressImageUtils.compress(mCropPath, compressPath, new CompressImageUtils.CompressImageListener() {
+                    tableManagerAddMap(tag, cropPath, compressPath, StateModel.STATE_COMPRESSING);
+                    listener.onStart(cropPath, 0, mPosition, tag);
+                    mCompressImageUtils.compress(cropPath, compressPath, new CompressImageUtils.CompressImageListener() {
                         @Override
                         public void onCompressSuccess(String basePath, String compressPath) {
                             tableManagerModifyState(tag, basePath, compressPath, StateModel.STATE_FINISH);
-                            listener.onNext(mCropBasePath, mCropPath, compressPath, 0, mPosition, tag);
+                            listener.onNext(cropBasePath, basePath, compressPath, 0, position, tag);
                         }
 
                         @Override
                         public void onCompressFailed(String basePath) {
                             tableManagerModifyState(tag, basePath, "", StateModel.STATE_FINISH);
-                            listener.onFailed(basePath, 0, mPosition, tag);
+                            listener.onFailed(cropBasePath, 0, position, tag);
                         }
                     });
                     return;

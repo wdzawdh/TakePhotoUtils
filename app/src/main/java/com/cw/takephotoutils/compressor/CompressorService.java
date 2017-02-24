@@ -35,7 +35,7 @@ public class CompressorService extends Service {
         public void compress(final String basePath, final String compressPath, final int maxSize, final int maxPixel
                 , final ICompressCallback callback) throws RemoteException {
             if (callback == null) {
-                throw new RuntimeException("ICompressCallback con not be null");
+                throw new IllegalArgumentException("ICompressCallback con not be null");
             }
             ThreadPoolManager.getThreadProxyPool().excute(new Runnable() {
                 @Override
@@ -83,4 +83,5 @@ public class CompressorService extends Service {
             return super.onStartCommand(intent, flags, startId);
         }
     }
+
 }
