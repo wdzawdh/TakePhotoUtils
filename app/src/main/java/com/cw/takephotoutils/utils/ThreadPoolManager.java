@@ -97,6 +97,7 @@ public class ThreadPoolManager {
         public void shutdown() {
             if (threadPoolExecutor != null) {
                 threadPoolExecutor.shutdown();
+                threadPoolExecutor = null;
             }
         }
 

@@ -26,9 +26,9 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.cw.takephotoutils.BaseApplication;
-import com.cw.takephotoutils.MyEnter;
 import com.cw.takephotoutils.MyExtra;
 import com.cw.takephotoutils.compressor.CompressImageUtils;
+import com.cw.takephotoutils.gallery.GalleryActivity;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -83,6 +83,10 @@ public class TakePhotoUtils {
         }
     }
 
+    public String getPath() {
+        return mPath;
+    }
+
     public void setMaxSize(int maxSize) {
         if (mCompressImageUtils != null) {
             mCompressImageUtils.setMaxSize(maxSize);
@@ -116,8 +120,8 @@ public class TakePhotoUtils {
         if (!isCameraCanUse()) {
             return;
         }
-        mSystemCameraPath = mPath + System.currentTimeMillis() + ".jpg";
         mIsSystemCamera = true;
+        mSystemCameraPath = refreshCameraFileName();
         File file = new File(mSystemCameraPath);
         Uri imageUri = Uri.fromFile(file);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -171,19 +175,22 @@ public class TakePhotoUtils {
             return;
         }
         mIsSystemGallery = false;
+        Intent i = new Intent(act, GalleryActivity.class);
+        i.putExtra(MyExtra.KEY_GALLERY_MAX_SIZE, maxCount);
+        i.putExtra(MyExtra.KEY_GALLERY_MIME_TYPE, "image/jpeg");
         String[] haveSelectedBasePath = getHaveSelectedBasePath(haveSelectedPaths);
-        MyEnter.openGallery(act, maxCount, haveSelectedBasePath, "image/jpeg");
+        i.putExtra(MyExtra.KEY_GALLERY_HAS_SELECTED, haveSelectedBasePath);
+        act.startActivityForResult(i, GalleryActivity.RESULT_PICK_IMAGE);
     }
 
     /**
      * 裁剪图片
      *
      * @param basePath 原图路径
-     * @param cropPath 裁剪图片路径
      */
-    public void cropImage(Activity act, String basePath, String cropPath) {
+    public void cropImage(Activity act, String basePath) {
         mCropBasePath = basePath;
-        mCropPath = cropPath;
+        mCropPath = refreshCropFileName();
         File file = new File(basePath);
         Uri imageUri = getImageContentUri(act, file);
         Intent intent = new Intent("com.android.camera.action.CROP");
@@ -196,7 +203,7 @@ public class TakePhotoUtils {
         intent.putExtra("scale", true);
         intent.putExtra("scaleUpIfNeeded", true);// 黑边
         intent.putExtra("return-data", false);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(cropPath)));
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(mCropPath)));
         intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
         act.startActivityForResult(intent, RESULT_CAMERA_CROP_RESULT);
     }
@@ -213,7 +220,7 @@ public class TakePhotoUtils {
             return;
         }
         if (!FileUtils.makeDirs(mPath)) {
-            Log.i("TakePhotoUtils", mPath + "img dir don't find");
+            Log.i("TakePhotoUtils", mPath + "Directory not find");
             return;
         }
         if (mCompressImageUtils == null) {
@@ -224,7 +231,7 @@ public class TakePhotoUtils {
             case TakePhotoUtils.RESULT_CAMERA_ONLY: {
                 String[] cameraPhotoPath = getCameraPhotoPath(data, mIsSystemCamera);
                 if (mNeedCrop && cameraPhotoPath.length > 0) {
-                    cropImage(act, cameraPhotoPath[0], refreshCropFileName());
+                    cropImage(act, cameraPhotoPath[0]);
                     return;
                 }
                 //情况一:不需要裁剪,需要压缩(拍照)
@@ -265,7 +272,7 @@ public class TakePhotoUtils {
             case TakePhotoUtils.RESULT_PICK_IMAGE: {
                 String[] pickPhotoPath = getPickPhotoPath(BaseApplication.sAppContext, data, mIsSystemGallery);
                 if (mNeedCrop && pickPhotoPath.length > 0) {
-                    cropImage(act, pickPhotoPath[0], refreshCropFileName());
+                    cropImage(act, pickPhotoPath[0]);
                     return;
                 }
                 //情况一:不需要裁剪,需要压缩(图库)
@@ -460,6 +467,14 @@ public class TakePhotoUtils {
     private String refreshCropFileName() {
         long currentTimeMillis = System.currentTimeMillis();
         return mPath + currentTimeMillis + "_crop.jpg";
+    }
+
+    /**
+     * 生成拍照文件名
+     */
+    private String refreshCameraFileName() {
+        long currentTimeMillis = System.currentTimeMillis();
+        return mPath + currentTimeMillis + ".jpg";
     }
 
     /**

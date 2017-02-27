@@ -58,7 +58,7 @@ public class CompressorService extends Service {
         /**
          * 通过实现一个内部 Service，两个Service同时发送具有相同 ID的 Notification，
          * 然后将内部 Service 结束掉。随着内部 Service 的结束，Notification
-         * 将会消失，但优先级依然保持为2(可见进程)。
+         * 将会消失，但优先级依然保持为前台进程。
          */
         startForeground(FOREGROUND_PUSH_ID, new Notification());
         // API >= 18 ，此方法能有效隐藏Notification上的图标
