@@ -44,8 +44,10 @@ public class CompressorService extends Service {
                     try {
                         callback.onCallBack(basePath, path);
                     } catch (RemoteException e) {
-                        stopSelf();
                         e.printStackTrace();
+                        //出现通讯异常就自杀
+                        stopSelf();
+                        android.os.Process.killProcess(android.os.Process.myPid());
                     }
                 }
             });
